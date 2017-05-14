@@ -3,7 +3,7 @@
 require __DIR__ . '/vendor/autoload.php';
 /*
 Plugin Name: Import FD images
-Description: import images from fashion dropshippers
+Description: Import images from fashion dropshippers
 Author: phpdaddy
 */
 
