@@ -1,0 +1,17 @@
+{
+  "name": "phpdaddy/import_fd_images",
+  "authors": [
+    {
+      "name": "Maksym Prysiazhnyi",
+      "email": "phpdaddy.cz@gmail.com"
+    }
+  ],
+  "require": {
+    "parsecsv/php-parsecsv": "^0.4.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "\\": "src/"
+    }
+  }
+}
