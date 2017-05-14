@@ -7,8 +7,6 @@ Description: import images from fashion dropshippers
 Author: phpdaddy
 */
 
-define('WP_DEBUG', true);
-
 add_action('admin_menu', 'plugin_setup_menu');
 
 function plugin_setup_menu()
