@@ -1,12 +1,15 @@
 <?php
 
+use Eventviva\ImageResize;
+use Gregwar\Image\Image;
+
 require __DIR__ . '/vendor/autoload.php';
 /*
 Plugin Name: Import FD images
 Description: Import images from fashion dropshippers
 Author: phpdaddy
 */
-
+ini_set('max_execution_time', 300);
 add_action('admin_menu', 'plugin_setup_menu');
 
 function plugin_setup_menu()
@@ -39,13 +42,15 @@ function submit_button_admin_page()
     $list = get_product_types_list($csv);
 
     echo '<form action="admin.php?page=import-fd-images" method="post">';
-    echo 'CSV url: ';
-    echo '<select value="' . $_POST['product_type'] . '" name="product_type" >';
-    echo '<option>All</option>';
+    echo 'CSV url: <br>';
+
     foreach ($list as $item) {
-        echo '<option>' . $item . '</option>';
+        echo '<input type="checkbox" name="product_types[]" value="' . $item . '">' . $item . '</input><br>';
     }
-    echo '</select>';
+
+    echo '<input type="checkbox" name="crop" >Crop</input><br>';
+    echo '<input type="checkbox" name="resize" >Resize</input><br>';
+
     wp_nonce_field('submit_button_clicked');
     echo '<input type="hidden" value="true" name="submit_button" />';
     submit_button('Import images');
@@ -71,11 +76,13 @@ function submit_button_action($csv)
     echo '<div id="message" class="updated fade"><p>'
         . 'Images were imported.' . '</p></div>';
 
-    $product_type = $_POST['product_type'];
+    $product_types = $_POST['product_types'];
+    $crop = $_POST['crop'];
+    $resize = $_POST['resize'];
 
     $ids = [];
     foreach ($csv->data as $row) {
-        if ($row['product_type'] === $product_type || $product_type === 'All') {
+        if (in_array($row['product_type'], $product_types)) {
             $ids[] = $row['id'];
         }
     }
@@ -98,6 +105,12 @@ function submit_button_action($csv)
 
             unlink($zipLocalFile);
             rename_images($productImagesFolder);
+            if ($crop) {
+                crop_images($productImagesFolder);
+            }
+            if ($resize) {
+                enlarge_images($productImagesFolder);
+            }
 
             echo '<div class="notice notice-success">Successfully imported images for ' . $id . '</div>';
         } catch (RuntimeException $ex) {
@@ -140,11 +153,38 @@ function rename_images($imagesFolder)
     $counter = 0;
     if ($handle = opendir($imagesFolder)) {
         while (false !== ($fileName = readdir($handle))) {
-            //$newName = str_replace("SKU#", "", $fileName);
             $ext = pathinfo($fileName, PATHINFO_EXTENSION);
             if ($ext === 'jpg') {
-                rename($imagesFolder . '/' . $fileName, $imagesFolder . '/' . 'image_' . $counter . '.jpg');
+                rename($imagesFolder . '/' . $fileName, $imagesFolder . '/' . basename($imagesFolder, '.zip') . '_' . $counter . '.jpg');
                 $counter++;
+            }
+        }
+        closedir($handle);
+    }
+}
+
+function crop_images($imagesFolder)
+{
+    if ($handle = opendir($imagesFolder)) {
+        while (false !== ($fileName = readdir($handle))) {
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            if ($ext === 'jpg') {
+                $image = Image::open($imagesFolder . '/' . $fileName);
+                $image->zoomCrop($image->width(), $image->width(), null, 0, $image->height())->save($imagesFolder . '/' . $fileName);
+            }
+        }
+        closedir($handle);
+    }
+}
+
+function enlarge_images($imagesFolder)
+{
+    if ($handle = opendir($imagesFolder)) {
+        while (false !== ($fileName = readdir($handle))) {
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            if ($ext === 'jpg') {
+                $image = Image::open($imagesFolder . '/' . $fileName);
+                $image->resize($image->width(), $image->height() * 1.3)->save($imagesFolder . '/' . $fileName);
             }
         }
         closedir($handle);
