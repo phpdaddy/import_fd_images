@@ -48,7 +48,7 @@ class ImportFDimages
         $list = $this->get_product_types_list($csv);
 
         echo '<form action="admin.php?page=import-fd-images" method="post">';
-        echo 'CSV url: <br>';
+        echo 'Choose category: <br>';
 
         foreach ($list as $item) {
             echo '<input type="checkbox" name="product_types[]" value="' . $item . '">' . $item . '</input><br>';
