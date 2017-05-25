@@ -37,7 +37,7 @@ function submit_button_admin_page()
 
     echo '<div class="wrap">';
 
-    echo '<h2>Import FD iamges</h2>';
+    echo '<h2>Import FD images</h2>';
 
     $list = get_product_types_list($csv);
 
